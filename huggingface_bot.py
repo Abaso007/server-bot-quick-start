@@ -53,7 +53,7 @@ class HuggingFaceConversationalBot(fp.PoeBot):
         for message in request.query:
             if message.role == "user":
                 if len(user_messages) > len(bot_messages):
-                    user_messages[-1] = user_messages[-1] + f"\n{message.content}"
+                    user_messages[-1] = f"{user_messages[-1]}\n{message.content}"
                 else:
                     user_messages.append(message.content)
             elif message.role == "bot":
@@ -76,13 +76,4 @@ stub = Stub("huggingface-poe")
 @asgi_app()
 def fastapi_app():
     bot = HuggingFaceConversationalBot(model="microsoft/DialoGPT-large")
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    # POE_ACCESS_KEY = ""
-    # app = make_app(bot, access_key=POE_ACCESS_KEY)
-    app = fp.make_app(bot, allow_without_key=True)
-    return app
+    return fp.make_app(bot, allow_without_key=True)

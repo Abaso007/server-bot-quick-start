@@ -69,20 +69,19 @@ def preprocess_message(message: fp.ProtocolMessage, bot: str) -> fp.ProtocolMess
         for message_bot, text in zip(parts[1::2], parts[2::2]):
             if message_bot.casefold() == bot.casefold():
                 return message.model_copy(update={"content": text})
-        # If we can't find a message by this bot, just return the original message
-        return message
-    else:
-        return message
+    # If we can't find a message by this bot, just return the original message
+    return message
 
 
 def preprocess_query(request: fp.QueryRequest, bot: str) -> fp.QueryRequest:
     """Parses the two bot responses and keeps the one for the current bot."""
-    new_query = request.model_copy(
+    return request.model_copy(
         update={
-            "query": [preprocess_message(message, bot) for message in request.query]
+            "query": [
+                preprocess_message(message, bot) for message in request.query
+            ]
         }
     )
-    return new_query
 
 
 async def stream_request_wrapper(
@@ -133,13 +132,4 @@ stub = Stub("turbo-vs-claude-poe")
 @asgi_app()
 def fastapi_app():
     bot = GPT35TurbovsClaudeBot()
-    # Optionally, provide your Poe access key here:
-    # 1. You can go to https://poe.com/create_bot?server=1 to generate an access key.
-    # 2. We strongly recommend using a key for a production bot to prevent abuse,
-    # but the starter examples disable the key check for convenience.
-    # 3. You can also store your access key on modal.com and retrieve it in this function
-    # by following the instructions at: https://modal.com/docs/guide/secrets
-    # POE_ACCESS_KEY = ""
-    # app = make_app(bot, access_key=POE_ACCESS_KEY)
-    app = fp.make_app(bot, allow_without_key=True)
-    return app
+    return fp.make_app(bot, allow_without_key=True)
